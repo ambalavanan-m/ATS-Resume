@@ -1,27 +1,41 @@
 import React from 'react';
-import { Target } from 'lucide-react';
+import { Sun, Moon } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 
-const Header = () => {
+const Header = ({ theme, onToggleTheme }) => {
   return (
-    <header className="flex items-center justify-between py-6 px-4 md:px-8 bg-[#0d1117] border-b border-[#30363d] sticky top-0 z-50">
+    <header className="flex items-center justify-between py-6 px-4 md:px-8 bg-card border-b border-border sticky top-0 z-50 transition-colors duration-300">
       <div className="flex items-center gap-3">
-        <div className="p-2 bg-accent/20 rounded-lg">
-          <Target className="text-accent" size={28} />
+        <div className="p-1 rounded-lg">
+          <img src="/logo.png" alt="ATS Analyzer Logo" className="w-12 h-12 object-contain" />
         </div>
         <div>
-          <h1 className="text-2xl font-serif tracking-tight leading-none">ATS <span className="text-accent">Analyzer</span></h1>
-          <p className="text-[10px] font-mono text-[#8b949e] uppercase tracking-[0.2em] mt-1">Rule-Based Resume Optimization</p>
+          <h1 className="text-2xl font-serif tracking-tight leading-none text-text-primary">ATS <span className="text-accent">Analyzer</span></h1>
+          <p className="text-[10px] font-mono text-text-secondary uppercase tracking-[0.2em] mt-1">Rule-Based Resume Optimization</p>
         </div>
       </div>
-      <div className="hidden md:flex items-center gap-6">
-        <nav className="flex items-center gap-6 text-sm font-medium text-[#8b949e]">
-          <a href="#" className="hover:text-accent transition-colors">Analyzer</a>
-          <a href="#" className="hover:text-accent transition-colors">Resources</a>
-          <a href="#" className="hover:text-accent transition-colors">About</a>
-        </nav>
-        <button className="px-4 py-2 bg-white/5 border border-[#30363d] rounded-lg text-sm hover:border-accent transition-all">
-          Get Started
-        </button>
+
+      <div className="flex items-center gap-4">
+        <div className="flex items-center gap-3">
+            {/* Theme Toggle */}
+            <button
+                onClick={onToggleTheme}
+                className="p-2.5 rounded-xl bg-background border border-border text-text-secondary hover:text-accent hover:border-accent transition-all relative overflow-hidden group"
+                aria-label="Toggle Theme"
+            >
+                <AnimatePresence mode="wait" initial={false}>
+                    <motion.div
+                        key={theme}
+                        initial={{ y: 20, opacity: 0, rotate: 45 }}
+                        animate={{ y: 0, opacity: 1, rotate: 0 }}
+                        exit={{ y: -20, opacity: 0, rotate: -45 }}
+                        transition={{ duration: 0.2 }}
+                    >
+                        {theme === 'dark' ? <Moon size={20} /> : <Sun size={20} />}
+                    </motion.div>
+                </AnimatePresence>
+            </button>
+        </div>
       </div>
     </header>
   );

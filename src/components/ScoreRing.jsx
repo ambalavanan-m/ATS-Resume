@@ -14,7 +14,7 @@ const ScoreRing = ({ score }) => {
     <div className="relative flex items-center justify-center w-32 h-32">
       <svg className="w-full h-full transform -rotate-90">
         <circle
-          className="text-gray-700"
+          className="text-border/40"
           strokeWidth="8"
           stroke="currentColor"
           fill="transparent"
@@ -38,8 +38,8 @@ const ScoreRing = ({ score }) => {
         />
       </svg>
       <div className="absolute flex flex-col items-center">
-        <span className="text-3xl font-bold font-mono">{score}</span>
-        <span className="text-[10px] uppercase font-mono tracking-widest text-white/50">ATS Score</span>
+        <span className="text-3xl font-bold font-mono text-text-primary">{score}</span>
+        <span className="text-[10px] uppercase font-mono tracking-widest text-text-secondary">ATS Score</span>
       </div>
     </div>
   );

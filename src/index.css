@@ -5,23 +5,37 @@
 @tailwind utilities;
 
 :root {
+  --bg-primary: #f9fafb;
+  --bg-card: #ffffff;
+  --border-primary: #e5e7eb;
+  --text-primary: #111827;
+  --text-secondary: #6b7280;
+  color-scheme: light;
+}
+
+.dark {
+  --bg-primary: #0d1117;
+  --bg-card: #161b22;
+  --border-primary: #30363d;
+  --text-primary: #ffffff;
+  --text-secondary: #8b949e;
   color-scheme: dark;
 }
 
 body {
-  @apply bg-background text-white antialiased;
+  @apply bg-background text-text-primary antialiased transition-colors duration-300;
   min-height: 100vh;
 }
 
 @layer components {
     .glass-card {
-        @apply bg-[#161b22] border border-[#30363d] rounded-xl backdrop-blur-sm;
+        @apply bg-card border border-border rounded-xl backdrop-blur-sm shadow-sm dark:shadow-none transition-all duration-300;
     }
     .glow-border {
         @apply transition-all duration-300 border border-transparent hover:border-accent hover:shadow-[0_0_15px_rgba(0,212,255,0.3)];
     }
     .btn-primary {
-        @apply bg-accent text-background font-bold py-3 px-6 rounded-lg transition-all duration-300 hover:scale-105 active:scale-95 shadow-[0_0_10px_rgba(0,212,255,0.4)] hover:shadow-[0_0_20px_rgba(0,212,255,0.6)];
+        @apply bg-accent text-[#0d1117] font-bold py-3 px-6 rounded-lg transition-all duration-300 hover:scale-105 active:scale-95 shadow-[0_0_10px_rgba(0,212,255,0.4)] hover:shadow-[0_0_20px_rgba(0,212,255,0.6)];
     }
 }
 
@@ -30,8 +44,12 @@ body {
   width: 8px;
 }
 ::-webkit-scrollbar-track {
-  @apply bg-[#0d1117];
+  @apply bg-background;
 }
 ::-webkit-scrollbar-thumb {
-  @apply bg-[#30363d] rounded-full hover:bg-[#484f58];
+  @apply bg-border rounded-full hover:bg-text-secondary;
+}
+
+.custom-scrollbar::-webkit-scrollbar {
+  width: 4px;
 }
