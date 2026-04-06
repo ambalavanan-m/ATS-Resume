@@ -1,51 +1,88 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import Header from './components/Header';
 import InputPanel from './components/InputPanel';
 import ResultsPanel from './components/ResultsPanel';
+import IndustrySelector from './components/IndustrySelector';
+import ExportButton from './components/ExportButton';
 import { analyzeResume } from './utils/analyzer';
+import debounce from 'lodash.debounce';
 
 const App = () => {
+  const [resumeText, setResumeText] = useState('');
+  const [jdText, setJdText] = useState('');
+  const [industry, setIndustry] = useState('tech');
+  const [isRealTime, setIsRealTime] = useState(true);
   const [analysisResults, setAnalysisResults] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
 
-  const handleAnalyze = (resumeText, jdText) => {
-    setIsLoading(true);
-    
-    // Simulate a brief processing delay for better UX
-    setTimeout(() => {
-      try {
-        const results = analyzeResume(resumeText, jdText);
+  // Debounced Analysis
+  const debouncedAnalysis = useCallback(
+    debounce((resume, jd, ind) => {
+      if (resume.trim() && jd.trim()) {
+        const results = analyzeResume(resume, jd, ind);
         setAnalysisResults(results);
-      } catch (err) {
-        console.error("Analysis Error:", err);
-      } finally {
-        setIsLoading(false);
       }
-    }, 1500);
+    }, 800),
+    []
+  );
+
+  useEffect(() => {
+    if (isRealTime && resumeText.trim() && jdText.trim()) {
+      debouncedAnalysis(resumeText, jdText, industry);
+    }
+  }, [resumeText, jdText, industry, isRealTime, debouncedAnalysis]);
+
+  const handleManualAnalyze = (resume, jd) => {
+    setResumeText(resume);
+    setJdText(jd);
+    setIsLoading(true);
+    setTimeout(() => {
+      const results = analyzeResume(resume, jd, industry);
+      setAnalysisResults(results);
+      setIsLoading(false);
+    }, 1000);
   };
 
   return (
     <div className="min-h-screen flex flex-col bg-background font-sans">
       <Header />
       
-      <main className="flex-1 container mx-auto py-10 px-4 md:px-8 grid grid-cols-1 lg:grid-cols-2 gap-10 max-h-[calc(100vh-100px)] overflow-hidden">
+      <main className="flex-1 container mx-auto py-10 px-4 md:px-8 grid grid-cols-1 lg:grid-cols-2 gap-10">
         {/* Left Panel: Inputs */}
-        <div className="h-full overflow-hidden flex flex-col">
-          <div className="mb-6">
-            <h2 className="text-3xl font-serif text-white mb-2">Resume <span className="text-accent italic">Assessment</span></h2>
-            <p className="text-[#8b949e] text-sm">Optimize your career profile for modern applicant tracking systems using our rule-based scoring engine.</p>
+        <div className="flex flex-col">
+          <div className="mb-6 flex justify-between items-end">
+            <div>
+              <h2 className="text-3xl font-serif text-white mb-2">Resume <span className="text-accent italic">Assessment</span></h2>
+              <p className="text-[#8b949e] text-sm">Real-time industry-based analysis for modern ATS.</p>
+            </div>
+            <div className="flex items-center gap-2 text-[10px] font-mono text-[#8b949e] uppercase tracking-widest bg-[#1c2128] px-3 py-1.5 rounded-full border border-[#30363d]">
+              <div className={`w-1.5 h-1.5 rounded-full ${isRealTime ? 'bg-green-500 animate-pulse' : 'bg-gray-500'}`} />
+              {isRealTime ? 'Live Analysis ON' : 'Manual Mode'}
+            </div>
           </div>
+          
+          <div className="mb-6">
+            <IndustrySelector selected={industry} onSelect={setIndustry} />
+          </div>
+
           <div className="flex-1 overflow-hidden">
-            <InputPanel onAnalyze={handleAnalyze} isLoading={isLoading} />
+            <InputPanel 
+                onAnalyze={handleManualAnalyze} 
+                isLoading={isLoading} 
+                externalText={resumeText}
+                onTextChange={setResumeText}
+                externalJd={jdText}
+                onJdChange={setJdText}
+            />
           </div>
         </div>
 
         {/* Right Panel: Results */}
-        <div className="h-full overflow-hidden flex flex-col">
-          <div className="mb-6 opacity-0 lg:opacity-100 pointer-events-none">
-             <h2 className="text-3xl font-serif text-white mb-2 invisible">Report</h2>
+        <div className="flex flex-col">
+          <div className="mb-6 flex justify-end">
+            {analysisResults && <ExportButton elementId="report-panel" />}
           </div>
-          <div className="flex-1 overflow-hidden">
+          <div id="report-panel" className="flex-1 overflow-hidden">
             <ResultsPanel results={analysisResults} />
           </div>
         </div>
