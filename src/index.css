@@ -1,0 +1,37 @@
+@import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=IBM+Plex+Mono:wght@400;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: dark;
+}
+
+body {
+  @apply bg-background text-white antialiased;
+  min-height: 100vh;
+}
+
+@layer components {
+    .glass-card {
+        @apply bg-[#161b22] border border-[#30363d] rounded-xl backdrop-blur-sm;
+    }
+    .glow-border {
+        @apply transition-all duration-300 border border-transparent hover:border-accent hover:shadow-[0_0_15px_rgba(0,212,255,0.3)];
+    }
+    .btn-primary {
+        @apply bg-accent text-background font-bold py-3 px-6 rounded-lg transition-all duration-300 hover:scale-105 active:scale-95 shadow-[0_0_10px_rgba(0,212,255,0.4)] hover:shadow-[0_0_20px_rgba(0,212,255,0.6)];
+    }
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+::-webkit-scrollbar-track {
+  @apply bg-[#0d1117];
+}
+::-webkit-scrollbar-thumb {
+  @apply bg-[#30363d] rounded-full hover:bg-[#484f58];
+}
