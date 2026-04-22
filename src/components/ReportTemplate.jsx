@@ -12,6 +12,15 @@ const ReportTemplate = ({ results, theme = 'dark' }) => {
 
   if (!results) return null;
 
+  const skills = results?.skills_categorized || {
+    matched_hard: [], matched_soft: [], missing_hard: [], missing_soft: []
+  };
+  const sectionScores = results?.section_scores || {
+    experience: 0, education: 0, skills: 0
+  };
+  const strengths = results?.strengths || [];
+  const suggestions = results?.suggestions || [];
+
   const HealthBar = ({ label, score, colorClass }) => (
     <div className="space-y-1.5">
       <div className="flex justify-between items-end border-b border-transparent">
@@ -87,11 +96,11 @@ const ReportTemplate = ({ results, theme = 'dark' }) => {
       <div className="grid grid-cols-3 gap-8 mb-12">
         <div className="col-span-1 space-y-6">
             <h3 className={`text-xs font-mono uppercase tracking-widest ${subTextColor} border-b ${borderColor} pb-2`}>Section Health</h3>
-            <HealthBar label="Professional Experience" score={results.section_scores.experience} />
-            <HealthBar label="Academic Background" score={results.section_scores.education} />
-            <HealthBar label="Core Skill Match" score={results.section_scores.skills} />
-            <HealthBar label="Readability & Tone" score={results.readability_score} />
-            <HealthBar label="ATS Formatting" score={results.format_score} />
+            <HealthBar label="Professional Experience" score={sectionScores.experience} />
+            <HealthBar label="Academic Background" score={sectionScores.education} />
+            <HealthBar label="Core Skill Match" score={sectionScores.skills} />
+            <HealthBar label="Readability & Tone" score={results?.readability_score || 0} />
+            <HealthBar label="ATS Formatting" score={results?.format_score || 0} />
         </div>
 
         <div className="col-span-2 grid grid-cols-2 gap-8">
@@ -101,7 +110,7 @@ const ReportTemplate = ({ results, theme = 'dark' }) => {
                     Audit Strengths
                 </h3>
                 <ul className="space-y-3">
-                    {results.strengths.slice(0, 4).map((s, i) => (
+                    {strengths.slice(0, 4).map((s, i) => (
                         <li key={i} className="text-[11px] leading-tight flex items-start gap-2">
                             <div className="w-1 h-1 rounded-full bg-green-500 mt-1.5" />
                             {s}
@@ -115,7 +124,7 @@ const ReportTemplate = ({ results, theme = 'dark' }) => {
                     Required Actions
                 </h3>
                 <ul className="space-y-3">
-                    {results.suggestions.slice(0, 4).map((s, i) => (
+                    {suggestions.slice(0, 4).map((s, i) => (
                         <li key={i} className="text-[10px] leading-tight flex items-start gap-2">
                             <div className="w-1 h-1 rounded-full bg-red-500 mt-1.5" />
                             {s.text}
@@ -146,12 +155,12 @@ const ReportTemplate = ({ results, theme = 'dark' }) => {
             <div>
                 <h4 className="text-[10px] font-bold text-green-500 uppercase mb-3 px-1 border-l-2 border-green-500/30">Matches Found</h4>
                 <div className="flex flex-wrap gap-2">
-                    {results.skills_categorized.matched_hard.slice(0, 12).map(kw => (
+                    {skills.matched_hard.slice(0, 12).map(kw => (
                         <span key={kw} className={`px-2 py-0.5 ${isDark ? 'bg-accent/10' : 'bg-accent/5'} text-accent text-[9px] font-bold border border-accent/20 rounded-md`}>
                             {kw}
                         </span>
                     ))}
-                    {results.skills_categorized.matched_soft.slice(0, 8).map(kw => (
+                    {skills.matched_soft.slice(0, 8).map(kw => (
                         <span key={kw} className={`px-2 py-0.5 ${isDark ? 'bg-purple-500/10' : 'bg-purple-500/5'} text-purple-500 text-[9px] font-bold border border-purple-500/20 rounded-md`}>
                             {kw}
                         </span>
@@ -161,12 +170,12 @@ const ReportTemplate = ({ results, theme = 'dark' }) => {
             <div>
                 <h4 className="text-[10px] font-bold text-red-500 uppercase mb-3 px-1 border-l-2 border-red-500/30">Gap Analysis (Missing)</h4>
                 <div className="flex flex-wrap gap-2">
-                    {results.skills_categorized.missing_hard.slice(0, 10).map(kw => (
+                    {skills.missing_hard.slice(0, 10).map(kw => (
                         <span key={kw} className={`px-2 py-0.5 ${isDark ? 'bg-white/5 opacity-60' : 'bg-black/5 opacity-60'} border border-transparent rounded-md text-[9px]`}>
                             {kw}
                         </span>
                     ))}
-                    {results.skills_categorized.missing_soft.slice(0, 8).map(kw => (
+                    {skills.missing_soft.slice(0, 8).map(kw => (
                         <span key={kw} className={`px-2 py-0.5 ${isDark ? 'bg-white/5 opacity-60' : 'bg-black/5 opacity-60'} border border-transparent rounded-md text-[9px]`}>
                             {kw}
                         </span>
@@ -182,7 +191,7 @@ const ReportTemplate = ({ results, theme = 'dark' }) => {
               <div className="p-1 px-3 border-2 border-accent/30 rounded-lg text-[9px] font-bold font-mono text-accent">
                   VERIFIED BY ATS-PRO
               </div>
-              <p className={`text-[8px] uppercase tracking-[0.2em] ${subTextColor}`}>Rule-Based Local Audit Engine v1.4.2</p>
+              <p className={`text-[8px] uppercase tracking-[0.2em] ${subTextColor}`}>AI-Powered Audit Engine v2.0</p>
           </div>
           <div className="text-right">
               <p className={`text-[8px] uppercase tracking-[0.2em] ${subTextColor}`}>&copy; 2026 ATS RESUME ANALYZER</p>

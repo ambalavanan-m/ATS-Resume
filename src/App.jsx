@@ -5,13 +5,11 @@ import ResultsPanel from './components/ResultsPanel';
 import IndustrySelector from './components/IndustrySelector';
 import ExportButton from './components/ExportButton';
 import { analyzeResume } from './utils/analyzer';
-import debounce from 'lodash.debounce';
 
 const App = () => {
   const [resumeText, setResumeText] = useState('');
   const [jdText, setJdText] = useState('');
   const [industry, setIndustry] = useState('tech');
-  const [isRealTime, setIsRealTime] = useState(true);
   const [analysisResults, setAnalysisResults] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const [theme, setTheme] = useState(() => {
@@ -35,32 +33,21 @@ const App = () => {
     setTheme(prev => prev === 'dark' ? 'light' : 'dark');
   };
 
-  // Debounced Analysis
-  const debouncedAnalysis = useCallback(
-    debounce((resume, jd, ind) => {
-      if (resume.trim() && jd.trim()) {
-        const results = analyzeResume(resume, jd, ind);
-        setAnalysisResults(results);
-      }
-    }, 800),
-    []
-  );
 
-  useEffect(() => {
-    if (isRealTime && resumeText.trim() && jdText.trim()) {
-      debouncedAnalysis(resumeText, jdText, industry);
-    }
-  }, [resumeText, jdText, industry, isRealTime, debouncedAnalysis]);
 
-  const handleManualAnalyze = (resume, jd) => {
+  const handleManualAnalyze = async (resume, jd) => {
     setResumeText(resume);
     setJdText(jd);
     setIsLoading(true);
-    setTimeout(() => {
-      const results = analyzeResume(resume, jd, industry);
+    try {
+      const results = await analyzeResume(resume, jd, industry);
       setAnalysisResults(results);
+    } catch (error) {
+      console.error("Analysis failed:", error);
+      alert("Failed to analyze resume. Please check console for details.");
+    } finally {
       setIsLoading(false);
-    }, 1000);
+    }
   };
 
   return (
@@ -76,8 +63,8 @@ const App = () => {
               <p className="text-text-secondary text-sm">Real-time industry-based analysis for modern ATS.</p>
             </div>
             <div className="flex items-center gap-2 text-[10px] font-mono text-text-secondary uppercase tracking-widest bg-card px-3 py-1.5 rounded-full border border-border">
-              <div className={`w-1.5 h-1.5 rounded-full ${isRealTime ? 'bg-green-500 animate-pulse' : 'bg-gray-500'}`} />
-              {isRealTime ? 'Live Analysis ON' : 'Manual Mode'}
+              <div className="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse" />
+              AI Powered Analysis
             </div>
           </div>
           
@@ -109,7 +96,7 @@ const App = () => {
       </main>
 
       <footer className="py-4 text-center text-text-secondary text-[10px] font-mono uppercase tracking-widest border-t border-border opacity-50">
-        &copy; 2026 ATS Resume Analyzer - Production-Grade Rule-Based Implementation
+        &copy; 2026 ATS Resume Analyzer - Production-Grade AI-Powered Implementation
       </footer>
     </div>
   );

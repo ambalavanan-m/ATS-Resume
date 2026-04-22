@@ -2,7 +2,7 @@ import React from 'react';
 import ScoreRing from './ScoreRing';
 import ProgressBar from './ProgressBar';
 import SuggestionsList from './SuggestionsList';
-import { CheckCircle2, TrendingUp, Layout, BookOpen, Search, ShieldCheck } from 'lucide-react';
+import { CheckCircle2, TrendingUp, Layout, BookOpen, Search, ShieldCheck, FileText, MessageSquare } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 const ResultsPanel = ({ results }) => {
@@ -18,7 +18,18 @@ const ResultsPanel = ({ results }) => {
     );
   }
 
-  const { skills_categorized: skills, section_scores: sectionScores } = results;
+  const skills = results?.skills_categorized || {
+    matched_soft: [],
+    matched_hard: [],
+    missing_soft: [],
+    missing_hard: []
+  };
+  
+  const sectionScores = results?.section_scores || {
+    experience: 0,
+    education: 0,
+    skills: 0
+  };
 
   return (
     <div className="glass-card p-8 animate-fade-in bg-card space-y-10 transition-colors duration-300">
@@ -59,7 +70,7 @@ const ResultsPanel = ({ results }) => {
           <div className="mt-8 space-y-4">
             <h4 className="text-xs font-mono uppercase tracking-widest text-text-secondary border-b border-border pb-2">Strengths</h4>
             <div className="space-y-2">
-              {results.strengths.map((str, i) => (
+              {(results?.strengths || []).map((str, i) => (
                 <div key={i} className="flex gap-2 items-start text-sm text-green-500 font-medium">
                   <CheckCircle2 size={16} className="mt-0.5 flex-shrink-0" />
                   <span className="text-text-primary opacity-90">{str}</span>
@@ -109,8 +120,47 @@ const ResultsPanel = ({ results }) => {
       {/* Suggestions Section */}
       <div className="border-t border-border pt-8">
         <h4 className="text-xs font-mono uppercase tracking-widest text-text-secondary mb-6">Optimization Checklist</h4>
-        <SuggestionsList suggestions={results.suggestions} />
+        <SuggestionsList suggestions={results?.suggestions || []} />
       </div>
+
+      {/* Advanced AI Features */}
+      {(results?.cover_letter || (results?.interview_questions && results.interview_questions.length > 0)) && (
+        <div className="border-t border-border pt-8 space-y-8">
+          
+          {/* Cover Letter */}
+          {results?.cover_letter && (
+            <div className="space-y-4">
+              <h4 className="text-xs font-mono uppercase tracking-widest text-accent flex items-center gap-2">
+                <FileText size={16} />
+                AI-Tailored Cover Letter
+              </h4>
+              <div className="p-6 bg-background border border-accent/20 rounded-xl whitespace-pre-wrap text-sm text-text-secondary leading-relaxed font-serif relative">
+                <div className="absolute top-0 left-0 w-1 h-full bg-accent rounded-l-xl opacity-50" />
+                {results.cover_letter}
+              </div>
+            </div>
+          )}
+
+          {/* Interview Questions */}
+          {results?.interview_questions && results.interview_questions.length > 0 && (
+            <div className="space-y-4">
+              <h4 className="text-xs font-mono uppercase tracking-widest text-purple-500 flex items-center gap-2">
+                <MessageSquare size={16} />
+                Targeted Interview Prep
+              </h4>
+              <div className="space-y-3">
+                {results.interview_questions.map((q, i) => (
+                  <div key={i} className="p-4 bg-background border border-purple-500/20 rounded-lg text-sm text-text-primary flex gap-3 relative overflow-hidden">
+                    <div className="absolute top-0 left-0 w-1 h-full bg-purple-500 opacity-50" />
+                    <div className="text-purple-500 font-mono font-bold mt-0.5 flex-shrink-0">Q{i+1}.</div>
+                    <div className="opacity-90">{q}</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 };
