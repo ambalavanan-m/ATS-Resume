@@ -4,6 +4,7 @@ import InputPanel from './components/InputPanel';
 import ResultsPanel from './components/ResultsPanel';
 import IndustrySelector from './components/IndustrySelector';
 import ExportButton from './components/ExportButton';
+import SavedVersions from './components/SavedVersions';
 import { analyzeResume } from './utils/analyzer';
 
 const App = () => {
@@ -12,6 +13,15 @@ const App = () => {
   const [industry, setIndustry] = useState('tech');
   const [analysisResults, setAnalysisResults] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
+  
+  const [savedVersions, setSavedVersions] = useState(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('ats_saved_versions');
+      return saved ? JSON.parse(saved) : [];
+    }
+    return [];
+  });
+
   const [theme, setTheme] = useState(() => {
     if (typeof window !== 'undefined') {
       return localStorage.getItem('theme') || 'dark';
@@ -33,8 +43,6 @@ const App = () => {
     setTheme(prev => prev === 'dark' ? 'light' : 'dark');
   };
 
-
-
   const handleManualAnalyze = async (resume, jd) => {
     setResumeText(resume);
     setJdText(jd);
@@ -50,6 +58,36 @@ const App = () => {
     }
   };
 
+  const handleSaveVersion = () => {
+    if (!analysisResults) return;
+    const newVersion = {
+      id: Date.now().toString(),
+      timestamp: Date.now(),
+      title: `${industry.toUpperCase()} - Score: ${analysisResults.ats_score}`,
+      resumeText,
+      jdText,
+      industry,
+      results: analysisResults
+    };
+    const newVersions = [newVersion, ...savedVersions];
+    setSavedVersions(newVersions);
+    localStorage.setItem('ats_saved_versions', JSON.stringify(newVersions));
+    alert('Version saved successfully!');
+  };
+
+  const handleLoadVersion = (version) => {
+    setResumeText(version.resumeText || '');
+    setJdText(version.jdText || '');
+    setIndustry(version.industry || 'tech');
+    setAnalysisResults(version.results);
+  };
+
+  const handleDeleteVersion = (id) => {
+    const newVersions = savedVersions.filter(v => v.id !== id);
+    setSavedVersions(newVersions);
+    localStorage.setItem('ats_saved_versions', JSON.stringify(newVersions));
+  };
+
   return (
     <div className="min-h-screen flex flex-col bg-background font-sans transition-colors duration-300">
       <Header theme={theme} onToggleTheme={toggleTheme} />
@@ -62,14 +100,22 @@ const App = () => {
               <h2 className="text-3xl font-serif text-text-primary mb-2">Resume <span className="text-accent italic">Assessment</span></h2>
               <p className="text-text-secondary text-sm">Real-time industry-based analysis for modern ATS.</p>
             </div>
-            <div className="flex items-center gap-2 text-[10px] font-mono text-text-secondary uppercase tracking-widest bg-card px-3 py-1.5 rounded-full border border-border">
-              <div className="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse" />
-              AI Powered Analysis
+            <div className="flex flex-col items-end gap-2">
+              <div className="flex items-center gap-2 text-[10px] font-mono text-text-secondary uppercase tracking-widest bg-card px-3 py-1.5 rounded-full border border-border">
+                <div className="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse" />
+                AI Powered Analysis
+              </div>
             </div>
           </div>
           
-          <div className="mb-6">
+          <div className="mb-6 flex justify-between items-center">
             <IndustrySelector selected={industry} onSelect={setIndustry} />
+            <SavedVersions 
+              versions={savedVersions} 
+              onSave={handleSaveVersion}
+              onLoad={handleLoadVersion}
+              onDelete={handleDeleteVersion}
+            />
           </div>
 
           <div className="flex-1">
@@ -90,7 +136,11 @@ const App = () => {
             {analysisResults && <ExportButton results={analysisResults} />}
           </div>
           <div id="report-panel" className="flex-1">
-            <ResultsPanel results={analysisResults} />
+            <ResultsPanel 
+              results={analysisResults} 
+              resumeText={resumeText} 
+              jdText={jdText} 
+            />
           </div>
         </div>
       </main>

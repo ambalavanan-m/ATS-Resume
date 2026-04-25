@@ -1,7 +1,12 @@
-const OPENROUTER_API_KEY = "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";
-
 export const analyzeWithLLM = async (resumeText, jobDescription, industry) => {
-  const systemPrompt = `You are an expert ATS (Applicant Tracking System) Analyzer. Your job is to deeply analyze a candidate's resume against a specific job description for the ${industry} industry.
+  // Use the static .env key first, fallback to localStorage if needed
+  const apiKey = import.meta.env.VITE_OPENROUTER_API_KEY || (typeof window !== 'undefined' ? localStorage.getItem('openrouter_api_key') : null);
+  
+  if (!apiKey) {
+    throw new Error("OpenRouter API Key is missing. Please check your .env file or Settings.");
+  }
+
+  const systemPrompt = `You are an expert ATS (Applicant Tracking System) Analyzer and Career Coach. Your job is to deeply analyze a candidate's resume against a specific job description for the ${industry} industry.
 
 You must return a STRICT JSON object without any markdown formatting, no \`\`\`json wrappers. Just raw JSON.
 The JSON must adhere to the following schema exactly:
@@ -29,16 +34,41 @@ The JSON must adhere to the following schema exactly:
   "summary": "Short 1-2 sentence summary of the candidate's fit.",
   "industry": "${industry}",
   "cover_letter": "A full, professional cover letter (3-4 paragraphs) tailored to the job description, highlighting the candidate's matched skills.",
-  "interview_questions": [
-    "Technical or behavioral question 1 tailored to the candidate's experience and the job requirements.",
-    "Question 2...",
-    "Question 3...",
-    "Question 4...",
-    "Question 5..."
+  "job_match_breakdown": {
+    "skills_match": "Brief assessment of skills overlap",
+    "experience_level": "Assessment of years and depth of experience vs required",
+    "education": "Assessment of educational background vs required",
+    "tools_technologies": "Match of specific software/tools",
+    "seniority_alignment": "Is candidate over/under qualified or right fit",
+    "domain_knowledge": "Industry specific knowledge match",
+    "certifications": "Match of required/nice-to-have certifications"
+  },
+  "rewrite_suggestions": [
+    { "original": "Original weak bullet from resume", "improved": "Improved bullet using action verb + metric + impact", "reason": "Why the original was weak" }
+  ],
+  "skill_gap_plan": [
+    { "skill": "Missing critical skill", "difficulty": "Easy|Medium|Hard", "estimated_time": "e.g., 2 weeks", "suggested_project": "A small project to learn this skill" }
+  ],
+  "format_issues": [
+    { "issue": "Description of risky formatting detected based on text/missing sections", "severity": "high|medium|low" }
+  ],
+  "linkedin_optimization": {
+    "headline": "Suggested optimized LinkedIn headline",
+    "about_section": "A professional, optimized 'About' section summary",
+    "featured_skills": ["Skill 1", "Skill 2", "Skill 3"],
+    "experience_bullets": ["A great bullet to feature on LinkedIn", "Another bullet"]
+  },
+  "interview_prep": [
+    { 
+      "question": "Targeted interview question", 
+      "type": "Technical|Behavioral", 
+      "star_framework": { "situation": "suggested situation to pull from their resume", "task": "the task to highlight", "action": "the action they should describe", "result": "the metric or impact to end on" },
+      "follow_up": "A likely follow-up question the interviewer might ask"
+    }
   ]
 }
 
-Be realistic and strict like a real ATS. Penalize for missing keywords heavily. Look for measurable metrics in the experience section.`;
+Be realistic and strict like a real ATS. Penalize for missing keywords heavily. Look for measurable metrics in the experience section. Assume the resume text might have formatting issues. Return exactly this JSON structure.`;
 
   const userPrompt = `JOB DESCRIPTION:\n${jobDescription}\n\n======================\n\nRESUME:\n${resumeText}`;
 
@@ -46,12 +76,12 @@ Be realistic and strict like a real ATS. Penalize for missing keywords heavily. 
     const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
       method: "POST",
       headers: {
-        "Authorization": `Bearer ${OPENROUTER_API_KEY}`,
+        "Authorization": `Bearer ${apiKey}`,
         "Content-Type": "application/json"
       },
       body: JSON.stringify({
         model: "google/gemini-2.5-flash",
-        max_tokens: 2500,
+        max_tokens: 8192,
         messages: [
           { role: "system", content: systemPrompt },
           { role: "user", content: userPrompt }
@@ -62,6 +92,9 @@ Be realistic and strict like a real ATS. Penalize for missing keywords heavily. 
 
     if (!response.ok) {
       const errText = await response.text();
+      if (response.status === 401 || response.status === 403) {
+        throw new Error("Invalid or missing OpenRouter API Key. Please update it in the Settings menu (top right).");
+      }
       throw new Error(`OpenRouter API error: ${response.status} - ${errText}`);
     }
 
